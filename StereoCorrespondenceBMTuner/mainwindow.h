@@ -33,7 +33,7 @@ private slots:
 
     void on_horizontalSlider_SAD_window_size_valueChanged(int value);
 
-    void on_horizontalSlider_pre_filter_size_valueChanged(int value);
+    void on_horizontalSlider_full_dp_valueChanged(int value);
 
     void on_horizontalSlider_pre_filter_cap_valueChanged(int value);
 
@@ -49,6 +49,10 @@ private slots:
 
     void on_horizontalSlider_disp_12_max_diff_valueChanged(int value);
 
+    void on_horizontalSlider_p1_valueChanged(int value);
+
+    void on_horizontalSlider_p2_valueChanged(int value);
+
 private:
     // the UI object, to access the UI elements created with Qt Designer
     Ui::MainWindow *ui;
@@ -58,7 +62,7 @@ private:
     cv::Mat right_image;
 
     // the object that holds the parameters for the block-matching algorithm
-    cv::StereoBM bmState;
+    cv::StereoSGBM bmState;
 
     void compute_depth_map();  // compute depth map with OpenCV
 

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -9,29 +11,30 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // the default values used in OpenCV are defined here:
     // https://github.com/Itseez/opencv/blob/master/modules/calib3d/src/stereobm.cpp
-    bmState.state->preFilterSize = 41;  // must be an odd between 5 and 255
-    bmState.state->preFilterCap = 31;  // must be within 1 and 63
-    bmState.state->SADWindowSize = 41;  // must be odd, be within 5..255 and be not larger than image width or height
-    bmState.state->minDisparity = -64;
-    bmState.state->numberOfDisparities = 128;  // must be > 0 and divisible by 16
-    bmState.state->textureThreshold = 10;  // must be non-negative
-    bmState.state->uniquenessRatio = 15;  // must be non-negative
-    bmState.state->speckleWindowSize = 0;
-    bmState.state->speckleRange = 0;
-    bmState.state->disp12MaxDiff = -1;
+    // bmState.preFilterSize = 41;  // must be an odd between 5 and 255
+    bmState.preFilterCap = 31;  // must be within 1 and 63
+    bmState.SADWindowSize = 3;  // must be odd, be within 5..255 and be not larger than image width or height
+    bmState.minDisparity = 0;
+    bmState.numberOfDisparities = 64;  // must be > 0 and divisible by 16
+    // bmState.textureThreshold = 10;  // must be non-negative
+    bmState.uniquenessRatio = 10;  // must be non-negative
+    bmState.speckleWindowSize = 0;
+    bmState.speckleRange = 0;
+    bmState.disp12MaxDiff = -1;
+    bmState.fullDP = true;
 
     // we override the default values defined in the UI file with Qt Designer
     // to the ones defined above
-    ui->horizontalSlider_pre_filter_size->setValue(bmState.state->preFilterSize);
-    ui->horizontalSlider_pre_filter_cap->setValue(bmState.state->preFilterCap);
-    ui->horizontalSlider_SAD_window_size->setValue(bmState.state->SADWindowSize);
-    ui->horizontalSlider_min_disparity->setValue(bmState.state->minDisparity);
-    ui->horizontalSlider_num_of_disparity->setValue(bmState.state->numberOfDisparities);
-    ui->horizontalSlider_texture_threshold->setValue(bmState.state->textureThreshold);
-    ui->horizontalSlider_uniqueness_ratio->setValue(bmState.state->uniquenessRatio);
-    ui->horizontalSlider_speckle_window_size->setValue(bmState.state->speckleWindowSize);
-    ui->horizontalSlider_speckle_range->setValue(bmState.state->speckleRange);
-    ui->horizontalSlider_disp_12_max_diff->setValue(bmState.state->disp12MaxDiff);
+    // ui->horizontalSlider_pre_filter_size->setValue(bmState.preFilterSize);
+    ui->horizontalSlider_pre_filter_cap->setValue(bmState.preFilterCap);
+    ui->horizontalSlider_SAD_window_size->setValue(bmState.SADWindowSize);
+    ui->horizontalSlider_min_disparity->setValue(bmState.minDisparity);
+    ui->horizontalSlider_num_of_disparity->setValue(bmState.numberOfDisparities);
+    // ui->horizontalSlider_texture_threshold->setValue(bmState.textureThreshold);
+    ui->horizontalSlider_uniqueness_ratio->setValue(bmState.uniquenessRatio);
+    ui->horizontalSlider_speckle_window_size->setValue(bmState.speckleWindowSize);
+    ui->horizontalSlider_speckle_range->setValue(bmState.speckleRange);
+    ui->horizontalSlider_disp_12_max_diff->setValue(bmState.disp12MaxDiff);
 }
 
 MainWindow::~MainWindow()
@@ -164,14 +167,14 @@ void MainWindow::compute_depth_map() {
 ///// pre filter size
 
 // must be an odd number
-void MainWindow::on_horizontalSlider_pre_filter_size_valueChanged(int value)
+void MainWindow::on_horizontalSlider_full_dp_valueChanged(int value)
 {
-    if ((value % 2) == 0) {
-        value -= 1;
-        ui->horizontalSlider_pre_filter_size->setValue(value);
-    }
+    // if ((value % 2) == 0) {
+        // value -= 1;
+        // ui->horizontalSlider_full_dp->setValue(value);
+    // }
 
-    bmState.state->preFilterSize = value;
+    bmState.fullDP = static_cast<bool>(value);
     compute_depth_map();
 }
 
@@ -179,7 +182,7 @@ void MainWindow::on_horizontalSlider_pre_filter_size_valueChanged(int value)
 
 void MainWindow::on_horizontalSlider_pre_filter_cap_valueChanged(int value)
 {
-    bmState.state->preFilterCap = value;
+    bmState.preFilterCap = value;
     compute_depth_map();
 }
 
@@ -188,18 +191,18 @@ void MainWindow::on_horizontalSlider_pre_filter_cap_valueChanged(int value)
 // the SAD Window size should always be smaller than the size of the images
 // so when a new image is loaded, we set the maximum value for the slider
 void MainWindow::set_SADWindowSize() {
-    int value = 255;  // max value allowed
+    // int value = bmState.SADWindowSize;  // max value allowed
 
     // we check that the value is not bigger than the size of the pictures
-    if (! left_image.empty())
-        value = std::min(value, std::min(left_image.cols, left_image.rows));
-    if (! right_image.empty())
-        value = std::min(value, std::min(right_image.cols, right_image.rows));
+    // if (! left_image.empty())
+        // value = std::min(value, std::min(left_image.cols, left_image.rows));
+    // if (! right_image.empty())
+        // value = std::min(value, std::min(right_image.cols, right_image.rows));
 
     // we check that the value is >= 5
-    value = std::max(value, 5);
+    // value = std::max(value, 5);
 
-    ui->horizontalSlider_SAD_window_size->setMaximum(value);
+    // ui->horizontalSlider_SAD_window_size->setMaximum(value);
 }
 
 // must be an odd number
@@ -210,7 +213,7 @@ void MainWindow::on_horizontalSlider_SAD_window_size_valueChanged(int value)
         ui->horizontalSlider_SAD_window_size->setValue(value);
     }
 
-    bmState.state->SADWindowSize = value;
+    bmState.SADWindowSize = value;
     compute_depth_map();
 }
 
@@ -218,7 +221,7 @@ void MainWindow::on_horizontalSlider_SAD_window_size_valueChanged(int value)
 
 void MainWindow::on_horizontalSlider_min_disparity_valueChanged(int value)
 {
-    bmState.state->minDisparity = value;
+    bmState.minDisparity = value;
     compute_depth_map();
 }
 
@@ -245,7 +248,7 @@ void MainWindow::set_num_of_disparity_slider_to_multiple_16(int value) {
         ui->horizontalSlider_num_of_disparity->setValue(value);
     }
 
-    bmState.state->numberOfDisparities = value;
+    bmState.numberOfDisparities = value;
     compute_depth_map();
 }
 
@@ -253,7 +256,7 @@ void MainWindow::set_num_of_disparity_slider_to_multiple_16(int value) {
 
 void MainWindow::on_horizontalSlider_texture_threshold_valueChanged(int value)
 {
-    bmState.state->textureThreshold = value;
+    // bmState.state->textureThreshold = value;
     compute_depth_map();
 }
 
@@ -261,7 +264,7 @@ void MainWindow::on_horizontalSlider_texture_threshold_valueChanged(int value)
 
 void MainWindow::on_horizontalSlider_uniqueness_ratio_valueChanged(int value)
 {
-    bmState.state->uniquenessRatio = value;
+    bmState.uniquenessRatio = value;
     compute_depth_map();
 }
 
@@ -269,7 +272,7 @@ void MainWindow::on_horizontalSlider_uniqueness_ratio_valueChanged(int value)
 
 void MainWindow::on_horizontalSlider_speckle_window_size_valueChanged(int value)
 {
-    bmState.state->speckleWindowSize = value;
+    bmState.speckleWindowSize = value;
     compute_depth_map();
 }
 
@@ -277,7 +280,7 @@ void MainWindow::on_horizontalSlider_speckle_window_size_valueChanged(int value)
 
 void MainWindow::on_horizontalSlider_speckle_range_valueChanged(int value)
 {
-    bmState.state->speckleRange = value;
+    bmState.speckleRange = value;
     compute_depth_map();
 }
 
@@ -285,6 +288,19 @@ void MainWindow::on_horizontalSlider_speckle_range_valueChanged(int value)
 
 void MainWindow::on_horizontalSlider_disp_12_max_diff_valueChanged(int value)
 {
-    bmState.state->disp12MaxDiff = value;
+    bmState.disp12MaxDiff = value;
+    compute_depth_map();
+}
+
+
+void MainWindow::on_horizontalSlider_p1_valueChanged(int value)
+{
+    bmState.P1 = value;
+    compute_depth_map();
+}
+
+void MainWindow::on_horizontalSlider_p2_valueChanged(int value)
+{
+    bmState.P2 = value;
     compute_depth_map();
 }
